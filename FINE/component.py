@@ -801,7 +801,7 @@ class ComponentModel(metaclass=ABCMeta):
             return opVar[loc, compName, p, t] <= factor1 * factor2 * capVar[loc, compName]
         setattr(pyM, constrName + '1_' + abbrvName, pyomo.Constraint(constrSet1, pyM.timeSet, rule=op1))
 
-    def operationMode2(self, pyM, esM, constrName, constrSetName, opVarName, isStateOfCharge=False):
+    def operationMode2(self, pyM, esM, constrName, constrSetName, opVarName, opRateName=None, isStateOfCharge=False):
         """
         Define operation mode 2. The operation [commodityUnit*h] is equal to the installed capacity multiplied
         with a time series in:\n
@@ -812,13 +812,14 @@ class ComponentModel(metaclass=ABCMeta):
         opVar, capVar = getattr(pyM, opVarName + '_' + abbrvName), getattr(pyM, 'cap_' + abbrvName)
         constrSet2 = getattr(pyM, constrSetName + '2_' + abbrvName)
         factor = 1 if isStateOfCharge else esM.hoursPerTimeStep
-
-        def op2(pyM, loc, compName, p, t):
-            return opVar[loc, compName, p, t] == capVar[loc, compName] * \
-                   compDict[compName].operationRateFix[loc][p, t] * factor
+        
+        def op2(pyM, loc, compName, p, t, opRateName=opRateName):
+          if opRateName is None: rate = getattr(compDict[compName], 'operationRateFix')
+          else: rate = getattr(compDict[compName], opRateName)
+          return opVar[loc, compName, p, t] == capVar[loc, compName] * rate[loc][p, t] * factor
         setattr(pyM, constrName + '2_' + abbrvName, pyomo.Constraint(constrSet2, pyM.timeSet, rule=op2))
 
-    def operationMode3(self, pyM, esM, constrName, constrSetName, opVarName, isStateOfCharge=False):
+    def operationMode3(self, pyM, esM, constrName, constrSetName, opVarName, opRateName=None, isStateOfCharge=False):
         """
         Define operation mode 3. The operation [commodityUnit*h] is limited by an installed capacity multiplied
         with a time series in:\n
@@ -830,9 +831,10 @@ class ComponentModel(metaclass=ABCMeta):
         constrSet3 = getattr(pyM, constrSetName + '3_' + abbrvName)
         factor = 1 if isStateOfCharge else esM.hoursPerTimeStep
 
-        def op3(pyM, loc, compName, p, t):
-            return opVar[loc, compName, p, t] <= capVar[loc, compName] * \
-                   compDict[compName].operationRateMax[loc][p, t] * factor
+        def op3(pyM, loc, compName, p, t, opRateName=opRateName):
+          if opRateName is None: rate = getattr(compDict[compName], 'operationRateMax')
+          else: rate = getattr(compDict[compName], opRateName)
+          return opVar[loc, compName, p, t] == capVar[loc, compName] * rate[loc][p, t] * factor
         setattr(pyM, constrName + '3_' + abbrvName, pyomo.Constraint(constrSet3, pyM.timeSet, rule=op3))
 
     def operationMode4(self, pyM, esM, constrName, constrSetName, opVarName):
