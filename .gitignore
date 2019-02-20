@@ -2,12 +2,19 @@
 FINE.egg-info
 .idea/
 __pycache__/
-example/.ipynb_checkpoints/
+.ipynb_checkpoints/
+*.local/
 *.eggs/
 *.testing/
+*.examples/
+*.build/
+*.dist/
+*.docs/build/
 
 # file types to ignore
 *.pyc
 *.egg-info
 *.log
 *.lp
+*.glp
+*.mps
