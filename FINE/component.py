@@ -1095,7 +1095,8 @@ class ComponentModel(metaclass=ABCMeta):
         optSummary.loc[optSummary.index.get_level_values(1) == 'TAC'] = \
             optSummary.loc[(optSummary.index.get_level_values(1) == 'capexCap') |
                            (optSummary.index.get_level_values(1) == 'opexCap') |
-                           (optSummary.index.get_level_values(1) == 'capexIfBuilt')].groupby(level=0).sum().values
+                           (optSummary.index.get_level_values(1) == 'capexIfBuilt') |
+                           (optSummary.index.get_level_values(1) == 'opexIfBuilt')].groupby(level=0).sum().values
 
         return optSummary
 
